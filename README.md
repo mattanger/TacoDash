@@ -15,7 +15,9 @@ https://www.amazon.com/dp/B0CDP6R2XR
 https://www.amazon.com/dp/B0C497LQFL
 
 #### Heltec ESP 32
-Used to gather temperature and CAN data. Uses DS18B20 temperature sensors and a CAN thingy 
+Used to gather temperature and CAN data. Uses DS18B20 temperature sensors and a CAN thingy. It's particularly nice 
+because I got tired of wasting time trying to figure out how to make the 1-Wire interface work on the 3B. 
+
 https://www.amazon.com/dp/B0D2L19QD4
 
 #### DS18B20 
