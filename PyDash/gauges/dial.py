@@ -50,21 +50,37 @@ class RoundGauge:
         self.thickness = 15
         self.radius = radius
         self.fill_color = fill_color
+    
+    def init_fonts(self): 
+        self.init_title_font()
+        self.init_subtitle_font()
+        self.init_value_font()
+        self.init_indicator_font()
 
-class ArcBarGauge:
 
-    def __init__(self, screen, position, thickness, radius, circle_colour, **kwargs):
-        self.screen = screen
-        self.Font = pygame.font.SysFont('ARIAL', 75)
+    def init_title_font(self): 
+        self.title_font = pygame.font.SysFont(self.title_font_name, self.title_font_size) 
+
+    def init_subtitle_font(self):
+        self.subtitle_font = pygame.font.SysFont(self.subtitle_font_name, self.subtitle_font_size)
+
+    def init_indicator_font(self):
+        self.ind_font = pygame.font.SysFont(self.indicator_font_name, self.indicator_font_size)
+
+    def init_value_font(self):
+        self.value_font = pygame.font.SysFont(self.value_font_name, self.value_font_size)
 
 
+class ArcBarGauge(RoundGauge):
+
+    def __init__(self, screen, position: tuple, radius: int, fill_color: tuple, range: tuple, **kwargs):
+        super().__init__(screen, position, radius, fill_color, range)
         self.x_cord = position[0] + radius
         self.y_cord = position[1] + radius
-        self.thickness = thickness
         self.radius = radius
-        self.circle_colour = circle_colour
-
         self.__dict__.update(kwargs)
+
+        self.init_fonts()
 
     def draw(self, percent):
         fill_angle = int(percent * 270 / 100)
@@ -76,9 +92,9 @@ class ArcBarGauge:
         if per > 100:
             per = 100
 
-        ac = [255-int(self.circle_colour[0] * per/100),
-                255-int(self.circle_colour[1] * per/100),
-                255-int(self.circle_colour[2] * per/100)]
+        ac = [255-int(self.fill_color[0] * per/100),
+                255-int(self.fill_color[1] * per/100),
+                255-int(self.fill_color[2] * per/100)]
 
         for indexi in range(len(ac)):
             if ac[indexi] < 0:
@@ -87,12 +103,12 @@ class ArcBarGauge:
                 ac[indexi] = 255
 
 
-        pertext = self.Font.render(str(percent) + "%", True, ac)
+        pertext = self.value_font.render(str(percent) + "%", True, ac)
         pertext_rect = pertext.get_rect(center=(int(self.x_cord), int(self.y_cord)))
         self.screen.blit(pertext, pertext_rect)
 
         for i in range(0, self.thickness):
-            pygame.gfxdraw.arc(self.screen, int(self.x_cord), int(self.y_cord), self.radius - i, -225, 270 - 225, self.circle_colour)
+            pygame.gfxdraw.arc(self.screen, int(self.x_cord), int(self.y_cord), self.radius - i, -225, 270 - 225, self.fill_color)
             if percent > 4:
                 pygame.gfxdraw.arc(self.screen, int(self.x_cord), int(self.y_cord), self.radius - i, -225, fill_angle - 225 - 8, ac)
 
@@ -125,10 +141,7 @@ class DialGauge(RoundGauge):
 
         self.__dict__.update(kwargs) 
 
-        self.Font = pygame.font.SysFont('ARIAL', self.value_font_size)
-        self.title_font = pygame.font.SysFont('ARIAL', self.title_font_size) 
-        self.ind_font = pygame.font.SysFont('ARIAL', self.indicator_font_size)
-
+        self.init_fonts() 
                
     def update_value(self, val): 
         self.value = val
@@ -137,7 +150,7 @@ class DialGauge(RoundGauge):
         pass
 
     def draw_center_text(self): 
-        value_text = self.Font.render(str(self.value), True, self.value_text_color)
+        value_text = self.value_font.render(str(self.value), True, self.value_text_color)
         rect = value_text.get_rect(center=(int(self.x_cord), int(self.y_cord)))
         self.screen.blit(value_text, rect)
         title_text = self.title_font.render(self.title, True, self.title_text_color)
@@ -149,8 +162,6 @@ class DialGauge(RoundGauge):
         dial_angle = ((arc / self.range_e) * self.value) + 54
         vec = pygame.math.Vector2(0, self.radius - self.thickness).rotate(dial_angle)
         pygame.draw.line(self.screen, self.dial_color, (self.x_cord, self.y_cord), (self.x_cord + vec.x, self.y_cord + vec.y), 2)
-
-
 
 
     def draw(self):

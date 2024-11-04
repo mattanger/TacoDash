@@ -74,8 +74,8 @@ def run():
                 position=(10,10),
                 thickness=50,
                 radius=200,
-                circle_colour=(126, 245, 95),
-                glow=True)
+                range=(0,100),
+                fill_color=(126, 245, 95))
 
     speed_gauge = gauges.dial.DialGauge(
         screen, 
