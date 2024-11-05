@@ -80,7 +80,7 @@ async def start_sensors(loop, dash_state: State):
         buffer = container['buffer']
         if is_set and len(buffer) > 0: 
             if ord(buffer[-1]) == 0x04: # received a full message 
-                handle_temp_message(buffer, dash_state)
+                handle_temp_message(buffer[:-1], dash_state)
                 container['buffer'] = ''
         loop.create_task(wait())
     

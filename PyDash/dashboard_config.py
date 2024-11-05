@@ -7,11 +7,13 @@ DASHBOARD = {
         },
         "Temperature": {
             "sensor": "outside",
-            "position": (-10,20)
+            "position": (1200,50),
+            "font_size": 36
         },
         "Temperature": {
             "sensor": "inside",
-            "position": (-10,40)
+            "position": (1200,100),
+            "font_size": 36
         }
     }
 }

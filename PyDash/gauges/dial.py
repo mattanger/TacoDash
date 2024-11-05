@@ -180,7 +180,6 @@ class DialGauge(RoundGauge):
 
         arc = 360 - ( self.end_angle - self.start_angle )
         step_angle = arc / int(self.range_e / self.major_increments) # the size of each step slice 
-        print(step_angle)
         step_range = int(self.range_e / self.major_increments) # the number of slices
 
         substep_angle = step_angle / self.major_increments

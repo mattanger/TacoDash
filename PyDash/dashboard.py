@@ -28,4 +28,4 @@ class Dashboard:
 
     def render_dashboard(self):
         for gauge in self.gauges:  
-            gauge.render()
+            gauge.draw()
