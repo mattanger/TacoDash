@@ -4,16 +4,18 @@ from inputs import counter
 from helpers import text
 from state import STATE
 import config
+from datetime import datetime
+
+# def get_time():
 
 class TextGauge(Gauge): 
     def __init__(self, position = None, **kwargs) -> None:
         self.position = position
         self.color = (255,255,255)
         self.font_size = 24
+        self.font_name = config.DEFAULT_FONT_NAME
         self.__dict__.update(kwargs)
-        print(kwargs)
-        print(self.font_size)
-        self.font = pygame.font.SysFont(config.DEFAULT_FONT_NAME, self.font_size)
+        self.font = pygame.font.SysFont(self.font_name, self.font_size)
 
     def fix_coordiantes(self, txt_surface, position):
         x = position[0]
@@ -45,23 +47,37 @@ class Clock(TextGauge):
     """
     """
     def __init__(self, position=None, **kwargs) -> None:
-        super(Clock, self).__init__(position, kwargs=kwargs)
+        self.date_format = "%m/%d/%y" 
+        self.time_format = "%H:%M:%S"
+        self.include_date = False
+        super(Clock, self).__init__(position, **kwargs)
+        print(self.font_size)
+
+    def get_format(self): 
+        format = ""
+        if self.include_date: 
+            format += self.date_format + " "
+        return format + self.time_format 
 
     def get_data(self):
-        return counter.get_time()
+        return datetime.now().strftime(self.get_format())
 
 
 class Temperature(TextGauge):
     HOT = 26
     COLD = 4.4
    
-    def __init__(self, sensor, title = "", position=None, scale = "C", **kwargs) -> None:
+    def __init__(self, sensor, title = None, position=None, scale = "C", **kwargs) -> None:
         self.sensor = sensor
         self.temperature = 0
         self.color = (0, 0, 0)
         self.scale = scale
+        self.title_font_size = 18
+        self.title_font_name = config.DEFAULT_FONT_NAME
+        self.title_color = (255,255,255)
         STATE.register_listener(attr="temperatures.{}".format(self.sensor), listener=self)
         super(Temperature, self).__init__(position, **kwargs)
+        self.title_font = pygame.font.SysFont(self.title_font_name, self.title_font_size)
 
     def notify(self, attr, value): 
         self.temperature = float(value) 
@@ -94,5 +110,8 @@ class Temperature(TextGauge):
     def draw(self):  
         color = self.calculate_color()
         txt_surface = self.font.render(self.get_temp_string(), True, color) 
+        title_txt_surface = self.title_font.render(self.sensor.title(), True, color)
         txt_rect = txt_surface.get_rect(center=self.position)
+        title_rect = title_txt_surface.get_rect(center=(self.position[0], self.position[1] + txt_rect.height))
         self.screen.blit(txt_surface, txt_rect)
+        self.screen.blit(title_txt_surface, title_rect)

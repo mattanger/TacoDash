@@ -15,8 +15,8 @@ class Dashboard:
     def init_from_config(self): 
         module = __import__("gauges")
         for g in config.DASHBOARD["gauges"]:
-            class_ = getattr(module, g) 
-            instance = class_(**config.DASHBOARD["gauges"][g])
+            class_ = getattr(module, g["gauge"]) 
+            instance = class_(**g["params"])
             instance.set_screen(self.screen)
             self.gauges.append(instance)
         

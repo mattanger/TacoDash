@@ -76,13 +76,16 @@ async def start_sensors(loop, dash_state: State):
     await client.start_notify(TEMP_CHARACTERISTIC_UUID, build_notifiy_cb(event, container))
     
     async def wait(): 
-        is_set = await event_wait(event, 0.5)
-        buffer = container['buffer']
-        if is_set and len(buffer) > 0: 
-            if ord(buffer[-1]) == 0x04: # received a full message 
-                handle_temp_message(buffer[:-1], dash_state)
-                container['buffer'] = ''
-        loop.create_task(wait())
+        try: 
+            is_set = await event_wait(event, 0.5)
+            buffer = container['buffer']
+            if is_set and len(buffer) > 0: 
+                if ord(buffer[-1]) == 0x04: # received a full message 
+                    handle_temp_message(buffer[:-1], dash_state)
+                    container['buffer'] = ''
+            loop.create_task(wait())
+        except asyncio.CancelledError:  
+            pass # probably not the best way to deal with this but screw it 
     
     async def on_quit(): 
         print('quit called')

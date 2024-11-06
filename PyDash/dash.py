@@ -22,27 +22,39 @@ def run_event_loop(loop):
 async def end_call():
     await asyncio.sleep(0.5)
 
-async def start_bluetooth(loop, shudown_listeners):  
-    bt_task, on_quit = await esp32.start_sensors(loop, STATE) 
-    loop.create_task(bt_task())
-    shudown_listeners.append(lambda: loop.create_task(on_quit()))
+def sync_call(awaitable, loop): 
+    return loop.run_until_complete(awaitable)
 
-def shutdown(sig, frame): 
-    global running
-    running = False 
-    # loop.stop()
-    # pygame.quit()
-    # sys.exit(0)
+
+async def try_bluetooth(loop, async_shutdown_listeners):  
+    bt_task, on_quit = esp32.start_sensors(loop, STATE)
+    if bt_task is None: # we've got a problem 
+        return False
+    loop.create_task(bt_task())
+    async_shutdown_listeners.append(lambda: loop.create_task(on_quit()))
+    return True
+
+
+async def start_bluetooth(loop, async_shutdown_listeners): 
+    result = await try_bluetooth(loop, async_shutdown_listeners)
+    if not result: 
+        print('start')
 
 def initialize(loop, shutdown_listeners):
-    loop.create_task(start_bluetooth(loop, shudown_listeners=shutdown_listeners))
-    # sf = functools.partial(shutdown, loop, shutdown_listeners)
+    loop.create_task(start_bluetooth(loop, async_shutdown_listeners=shutdown_listeners))
+    def shutdown(sig, frame): 
+        global running
+        running = False 
+        for l in shutdown_listeners:
+            loop.run_until_complete(l())
+        for t in asyncio.all_tasks(loop):
+            t.cancel()
+        loop.close()
+
     signal.signal(signal.SIGINT, shutdown)
     signal.signal(signal.SIGTERM, shutdown)
     signal.signal(signal.SIGHUP, shutdown)
-    # loop.add_signal_handler(signal.SIGHUP, sf)
-    # loop.add_signal_handler(signal.SIGTERM, sf)
-    # loop.add_signal_handler(signal.SIGINT, sf)
+    return shutdown
 
 def temperature_listener(key, value): 
     print("{}: {}".format(key, value))
@@ -54,7 +66,7 @@ def run():
     data_thread = DataThread()
     global running
     # from gauges import text
-    HEIGHT = 1280
+    HEIGHT = 1600
     WIDTH = 720
     MODE = (HEIGHT, WIDTH)
 
@@ -67,7 +79,7 @@ def run():
     taco_dash = Dashboard(screen)
     shutdown_listeners = []
     event_loop = asyncio.get_event_loop()
-    initialize(event_loop, shutdown_listeners)
+    shutdown = initialize(event_loop, shutdown_listeners)
 
     per_gauge = gauges.dial.ArcBarGauge(
               screen=screen,
@@ -101,6 +113,7 @@ def run():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+                shutdown(None, None)
 
         # fill the screen with a color to wipe away anything from last frame
         screen.fill((30, 19, 34))
@@ -112,7 +125,6 @@ def run():
         speed_gauge.draw()
         tack.draw()
 
-
         # flip() the display to put your work on screen
         pygame.display.flip()
 
@@ -120,16 +132,10 @@ def run():
         # dt is delta time in seconds since last frame, used for framerate-
         # independent physics.
         dt = clock.tick(6) / 1000
+ 
 
-    for l in shutdown_listeners:
-        l()
-
-    for t in asyncio.all_tasks(event_loop):
-        t.cancel()
-    
     data_thread.stop()
     data_thread.join()
-    event_loop.close()
     pygame.quit()
 
 
