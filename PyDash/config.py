@@ -3,9 +3,12 @@ import os
 import sys
 from importlib.machinery  import SourceFileLoader
 import logging
+from dotenv import load_dotenv
 
 
 logger = logging.getLogger(__name__)
+
+load_dotenv()
 
 DASHBOARD = {}
 
@@ -18,6 +21,16 @@ DEFAULT_FONT_NAME = 'ARIAL'
 BACKGROUND_COLOR = (30, 19, 34)
 
 STATUS_FILE = '/tmp/tacodash_status'
+
+FULLSCREEN = bool(os.getenv('FULLSCREEN', False))
+
+HEIGHT = 1600
+WIDTH = 720
+MODE = (HEIGHT, WIDTH)
+
+if FULLSCREEN: 
+    MODE = (0,0)
+
 
 try:
     # pylint: disable=import-error,wildcard-import,unused-wildcard-import

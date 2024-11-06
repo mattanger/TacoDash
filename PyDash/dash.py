@@ -62,13 +62,16 @@ def run():
     data_thread = DataThread()
     global running
     # from gauges import text
-    HEIGHT = 1600
-    WIDTH = 720
-    MODE = (HEIGHT, WIDTH)
+   
 
     # pygame setup
     pygame.init()
-    screen = pygame.display.set_mode(MODE)
+    screen = None
+    if config.FULLSCREEN: 
+        screen = pygame.display.set_mode(config.MODE, pygame.FULLSCREEN)
+    else: 
+        screen = pygame.display.set_mode(config.MODE)
+    
     clock = pygame.time.Clock()
     dt = 0
 
