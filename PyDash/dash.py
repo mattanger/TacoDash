@@ -1,12 +1,8 @@
 import pygame
 import asyncio
 import signal
-import functools
-import sys
 from data_thread import DataThread
-
 from random import randint
-
 from pygame.locals import *
 from state import STATE
 import config
